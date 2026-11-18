@@ -30,7 +30,7 @@ def add_income(db: Session, user_id: int, wallet_name: str, income: Decimal) -> 
     return wallet
 
 
-def add_expense(db: Session, user_id: int, wallet_name: str, expense: Decimal) -> Wallet:
+def add_expense(db: Session, user_id: int, wallet_name: str, expense: Decimal) -> Wallet | None:
     wallet = db.query(Wallet).filter(Wallet.name == wallet_name, Wallet.user_id==user_id).scalar()
     wallet.balance -= expense
     return wallet

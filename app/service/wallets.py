@@ -10,8 +10,8 @@ from app.schemas import CreateWalletRequest, WalletResponse
 
 def get_wallet(db: Session, current_user: User, wallet_name: str | None = None):
     if wallet_name is None:
-        wallets =  wallet_repository.get_all_wallets(db, current_user)
-        return {"total_balance": sum([w.amount for w in wallets]), "wallets": wallets}
+        wallets =  wallet_repository.get_all_wallets(db, current_user.id)
+        return {"total_balance": sum([w.balance for w in wallets]), "wallets": wallets}
 
     if not wallet_repository.is_wallet_exists(db, current_user.id, wallet_name):
         raise HTTPException(status_code=404, detail=f"Wallet {wallet_name} not found")
