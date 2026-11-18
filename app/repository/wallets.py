@@ -20,7 +20,7 @@ def get_balance(db: Session, user_id: int,  wallet_name: str) -> Wallet:
 def create_wallet(db: Session, user_id: int, wallet_name: str, amount: Decimal) -> Wallet:
     wallet = Wallet(name=wallet_name, balance=amount, user_id=user_id)
     db.add(wallet)
-    db.flush(wallet)
+    db.flush()
     return wallet
 
 def add_income(db: Session, user_id: int, wallet_name: str, income: Decimal) -> Wallet:
