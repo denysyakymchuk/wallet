@@ -3,6 +3,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
+from app.enum import CurrencyEnum
 from app.models import Wallet, User
 
 
@@ -17,8 +18,8 @@ def get_balance(db: Session, user_id: int,  wallet_name: str) -> Wallet:
     return db.query(Wallet).filter(Wallet.name == wallet_name, Wallet.user_id==user_id).scalar()
 
 
-def create_wallet(db: Session, user_id: int, wallet_name: str, amount: Decimal) -> Wallet:
-    wallet = Wallet(name=wallet_name, balance=amount, user_id=user_id)
+def create_wallet(db: Session, user_id: int, wallet_name: str, amount: Decimal, currency: CurrencyEnum) -> Wallet:
+    wallet = Wallet(name=wallet_name, balance=amount, user_id=user_id, currency=currency)
     db.add(wallet)
     db.flush()
     return wallet
