@@ -12,7 +12,9 @@ def is_wallet_exists(db: Session, user_id: int, wallet_name: str) -> bool:
 
 
 def get_all_wallets(db: Session, user_id: int) -> list[Wallet]:
-    return db.query(Wallet).filter(User.id == user_id, Wallet.user_id==user_id).all()
+    return db.query(Wallet).filter(
+        Wallet.user_id == user_id
+    ).all()
 
 def get_balance(db: Session, user_id: int,  wallet_name: str) -> Wallet:
     return db.query(Wallet).filter(Wallet.name == wallet_name, Wallet.user_id==user_id).scalar()
