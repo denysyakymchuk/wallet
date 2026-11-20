@@ -10,3 +10,4 @@ class CurrencyEnum(StrEnum):
 class OperationType(StrEnum):
     INCOME = auto()
     OUTCOME = auto()
+    TRANSFER = auto()

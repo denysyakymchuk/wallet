@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.dependency import get_db, get_current_user
 from app.models import User
-from app.schemas import OperationRequest, OperationResponse
+from app.schemas import OperationRequest, OperationResponse, TransferCreateSchema
 from app.service import operations as operation_service
 
 router = APIRouter()
@@ -25,3 +25,12 @@ def get_operational_list(wallet_id: int | None = Query(None),
                          user: User = Depends(get_current_user),
                          db: Session = Depends(get_db)):
     return operation_service.get_operational_list(db, user, wallet_id, date_from, date_to)
+
+
+@router.post("/operations/transfer", response_model=OperationResponse)
+def create_transfer(
+        payload: TransferCreateSchema,
+        user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+):
+    return operation_service.transfer_between_wallets(db, user, payload.from_wallet_id, payload.to_wallet_id, payload.amount)

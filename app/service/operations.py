@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from app.models import User
 from app.schemas import OperationRequest, OperationResponse
 from app.repository import wallets as wallet_repository
 from app.repository import operations as operations_repository
+from app.service.exchange import get_exchange_rate
 
 
 def add_income(db: Session, current_user: User, operation: OperationRequest) -> OperationResponse:
@@ -80,3 +82,41 @@ def get_operational_list(db: Session,
     for operation in operations:
         result.append(OperationResponse.model_validate(operation))
     return result
+
+
+def transfer_between_wallets(db: Session, user_id: int, from_wallet_id: int, to_wallet_id: int, amount: Decimal) -> OperationResponse:
+    from_wallet = wallet_repository.get_balance(db, to_wallet_id, user_id)
+    to_wallet = wallet_repository.get_balance(db, from_wallet_id, user_id)
+
+    if not from_wallet or not to_wallet:
+        raise HTTPException(404, "Wallet not found")
+
+    if from_wallet.balance <= amount:
+        raise HTTPException(400, "No enough balance")
+
+
+    target_amount = amount
+    exchange_rate = 1.0
+    if from_wallet.currency != to_wallet.currency:
+        exchange_rate = get_exchange_rate(
+            from_wallet.currency, to_wallet.currency
+        )
+        target_amount  = round(amount * exchange_rate, 2)
+
+    from_wallet.balance = round(from_wallet.balance - amount, 2)
+    to_wallet.balance = round(to_wallet.balance + amount, 2)
+    operation = operations_repository.create_operation(
+        db=db,
+        wallet_id=from_wallet.id,
+        type=OperationType.TRANSFER,
+        amount=target_amount,
+        currency=from_wallet.currency,
+        category=OperationType.TRANSFER,
+    )
+
+    db.add(from_wallet)
+    db.add(to_wallet)
+    db.add(operation)
+    db.commit()
+    return OperationResponse.model_validate(operation)
+
